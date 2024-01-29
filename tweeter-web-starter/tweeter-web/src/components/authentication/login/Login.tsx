@@ -14,8 +14,8 @@ interface Props {
 }
 
 const Login = (props: Props) => {
-  const [alias] = useState("");
-  const [password] = useState("");
+  const [alias, setAlias] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
@@ -42,14 +42,14 @@ const Login = (props: Props) => {
       }
     } catch (error) {
       displayErrorMessage(
-        `Failed to log user in because of exception: ${error}`
+          `Failed to log user in because of exception: ${error}`
       );
     }
   };
 
   const login = async (
-    alias: string,
-    password: string
+      alias: string,
+      password: string
   ): Promise<[User, AuthToken]> => {
     // TODO: Replace with the result of calling the server
     let user = FakeData.instance.firstUser;
@@ -63,29 +63,29 @@ const Login = (props: Props) => {
 
   const inputFieldGenerator = () => {
     return (
-      <AuthenticationFields/>
+        <AuthenticationFields setAliasFunc={setAlias} setPasswordFunc={setPassword}/>
     );
   };
 
   const switchAuthenticationMethodGenerator = () => {
     return (
-      <div className="mb-3">
-        Not registered? <Link to="/register">Register</Link>
-      </div>
+        <div className="mb-3">
+          Not registered? <Link to="/register">Register</Link>
+        </div>
     );
   };
 
   return (
-    <AuthenticationFormLayout
-      headingText="Please Sign In"
-      submitButtonLabel="Sign in"
-      oAuthHeading="Sign in with:"
-      inputFieldGenerator={inputFieldGenerator}
-      switchAuthenticationMethodGenerator={switchAuthenticationMethodGenerator}
-      setRememberMe={setRememberMe}
-      submitButtonDisabled={checkSubmitButtonStatus}
-      submit={doLogin}
-    />
+      <AuthenticationFormLayout
+          headingText="Please Sign In"
+          submitButtonLabel="Sign in"
+          oAuthHeading="Sign in with:"
+          inputFieldGenerator={inputFieldGenerator}
+          switchAuthenticationMethodGenerator={switchAuthenticationMethodGenerator}
+          setRememberMe={setRememberMe}
+          submitButtonDisabled={checkSubmitButtonStatus}
+          submit={doLogin}
+      />
   );
 };
 

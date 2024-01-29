@@ -1,10 +1,10 @@
-import {useState} from "react";
 
-const AuthenticationFields = () => {
-    const [, setAlias] = useState("");
-    const [, setPassword] = useState("");
+interface Props {
+    setAliasFunc: Function,
+    setPasswordFunc: Function,
+}
 
-
+const AuthenticationFields = (props: Props) => {
     return (
         <>
             <div className="form-floating">
@@ -14,7 +14,7 @@ const AuthenticationFields = () => {
                     size={50}
                     id="aliasInput"
                     placeholder="name@example.com"
-                    onChange={(event) => setAlias(event.target.value)}/>
+                    onChange={(event) => props.setAliasFunc(event.target.value)}/>
                 <label htmlFor="aliasInput">Alias</label>
             </div>
             <div className="form-floating mb-3">
@@ -23,7 +23,7 @@ const AuthenticationFields = () => {
                     className="form-control bottom"
                     id="passwordInput"
                     placeholder="Password"
-                    onChange={(event) => setPassword(event.target.value)}/>
+                    onChange={(event) => props.setPasswordFunc(event.target.value)}/>
                 <label htmlFor="passwordInput">Password</label>
             </div>
         </>
