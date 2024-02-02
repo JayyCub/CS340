@@ -2,9 +2,12 @@
 interface Props {
     setAliasFunc: Function,
     setPasswordFunc: Function,
+    bottomClass: boolean
 }
 
 const AuthenticationFields = (props: Props) => {
+    let passwordClassInner = props.bottomClass ? "form-control bottom" : "form-control";
+    let passwordClassOuter = props.bottomClass ? "form-floating mb-3" : "form-floating";
     return (
         <>
             <div className="form-floating">
@@ -17,10 +20,10 @@ const AuthenticationFields = (props: Props) => {
                     onChange={(event) => props.setAliasFunc(event.target.value)}/>
                 <label htmlFor="aliasInput">Alias</label>
             </div>
-            <div className="form-floating mb-3">
+            <div className={passwordClassOuter}>
                 <input
                     type="password"
-                    className="form-control bottom"
+                    className={passwordClassInner}
                     id="passwordInput"
                     placeholder="Password"
                     onChange={(event) => props.setPasswordFunc(event.target.value)}/>
