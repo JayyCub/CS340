@@ -14,6 +14,9 @@ import {AuthToken, User, FakeData, Status} from "tweeter-shared";
 import UserItemScroller from "./components/mainLayout/UserItemScroller";
 import useUserInfo from "./components/userInfo/UserInfoHook";
 import StatusItemScroller from "./components/mainLayout/StatusItemScroller";
+import {UserItemView} from "./presenter/UserItemPresenter";
+import {FollowingPresenter} from "./presenter/FollowingPresenter";
+import {FollowersPresenter} from "./presenter/FollowersPresenter";
 
 const App = () => {
   const { currentUser, authToken } = useUserInfo();
@@ -37,35 +40,25 @@ const App = () => {
 };
 
 const AuthenticatedRoutes = () => {
-  const loadMoreFollowers = async (
+  const loadMoreFeedItems = async (
     authToken: AuthToken,
     user: User,
     pageSize: number,
-    lastItem: User | null
-  ): Promise<[User[], boolean]> => {
+    lastItem: Status | null
+  ): Promise<[Status[], boolean]> => {
     // TODO: Replace with the result of calling server
-    return FakeData.instance.getPageOfUsers(lastItem, pageSize, user);
+    return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
   };
 
-  const loadMoreFollowees = async (
+  const loadMoreStoryItems = async (
     authToken: AuthToken,
     user: User,
     pageSize: number,
-    lastItem: User | null
-  ): Promise<[User[], boolean]> => {
+    lastItem: Status | null
+  ): Promise<[Status[], boolean]> => {
     // TODO: Replace with the result of calling server
-    return FakeData.instance.getPageOfUsers(lastItem, pageSize, user);
+    return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
   };
-
-    const loadMoreFeedItems = async (
-        authToken: AuthToken,
-        user: User,
-        pageSize: number,
-        lastItem: Status | null
-    ): Promise<[Status[], boolean]> => {
-        // TODO: Replace with the result of calling server
-        return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
-    };
 
   return (
     <Routes>
@@ -79,7 +72,7 @@ const AuthenticatedRoutes = () => {
           />
           <Route path="story" element={
               <StatusItemScroller
-                  loadMoreItems={loadMoreFeedItems}
+                  loadMoreItems={loadMoreStoryItems}
               />
           }
           />
@@ -87,8 +80,7 @@ const AuthenticatedRoutes = () => {
           path="following"
           element={
             <UserItemScroller
-              loadItems={loadMoreFollowees}
-              itemDescription="followees"
+              presenterGenerator={(view: UserItemView) => new FollowingPresenter(view)}
             />
           }
         />
@@ -96,8 +88,7 @@ const AuthenticatedRoutes = () => {
           path="followers"
           element={
             <UserItemScroller
-              loadItems={loadMoreFollowers}
-              itemDescription="followers"
+              presenterGenerator={(view: UserItemView) => new FollowersPresenter(view)}
             />
           }
         />
