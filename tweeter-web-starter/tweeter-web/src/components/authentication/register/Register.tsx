@@ -3,11 +3,10 @@ import "bootstrap/dist/css/bootstrap.css";
 import { ChangeEvent, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthenticationFormLayout from "../AuthenticationFormLayout";
-import { AuthToken, FakeData, User } from "tweeter-shared";
-import { Buffer } from "buffer";
 import useToastListener from "../../toaster/ToastListenerHook";
-import AuthenticationFields from "../AuthenticationFields";
 import useUserInfo from "../../userInfo/UserInfoHook";
+import {RegisterPresenter, RegisterView} from "../../../presenter/Authentication/RegisterPresenter";
+import AuthenticationFields from "../AuthenticationFields";
 
 const Register = () => {
   const [firstName, setFirstName] = useState("");
@@ -31,134 +30,82 @@ const Register = () => {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    handleImageFile(file);
+    presenter.handleImageFile(file);
   };
 
-  const handleImageFile = (file: File | undefined) => {
-    if (file) {
-      setImageUrl(URL.createObjectURL(file));
+  const listener: RegisterView = {
+    navigate: navigate,
+    displayErrorMessage: displayErrorMessage,
+    updateUserInfo: updateUserInfo,
+    setImageBytes: setImageBytes,
+    setImageUrl: setImageUrl,
+  }
 
-      const reader = new FileReader();
-      reader.onload = (event: ProgressEvent<FileReader>) => {
-        const imageStringBase64 = event.target?.result as string;
-
-        // Remove unnecessary file metadata from the start of the string.
-        const imageStringBase64BufferContents =
-            imageStringBase64.split("base64,")[1];
-
-        const bytes: Uint8Array = Buffer.from(
-            imageStringBase64BufferContents,
-            "base64"
-        );
-
-        setImageBytes(bytes);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setImageUrl("");
-      setImageBytes(new Uint8Array());
-    }
-  };
+  const presenter = new RegisterPresenter(listener)
 
   const doRegister = async () => {
-    try {
-      let [user, authToken] = await register(
-          firstName,
-          lastName,
-          alias,
-          password,
-          imageBytes
-      );
-
-      updateUserInfo(user, user, authToken, rememberMeRef.current);
-      navigate("/");
-    } catch (error) {
-      displayErrorMessage(
-          `Failed to register user because of exception: ${error}`
-      );
-    }
-  };
-
-  const register = async (
-      firstName: string,
-      lastName: string,
-      alias: string,
-      password: string,
-      userImageBytes: Uint8Array
-  ): Promise<[User, AuthToken]> => {
-    // Not neded now, but will be needed when you make the request to the server in milestone 3
-    let imageStringBase64: string =
-        Buffer.from(userImageBytes).toString("base64");
-
-    // TODO: Replace with the result of calling the server
-    let user = FakeData.instance.firstUser;
-
-    if (user === null) {
-      throw new Error("Invalid registration");
-    }
-
-    return [user, FakeData.instance.authToken];
+    presenter.doRegister(firstName,lastName,alias,password,imageBytes,rememberMeRef.current)
   };
 
   const inputFieldGenerator = () => {
     return (
-        <>
-          <div className="form-floating">
-            <input
-                type="text"
-                className="form-control"
-                size={50}
-                id="firstNameInput"
-                placeholder="First Name"
-                onChange={(event) => setFirstName(event.target.value)}
-            />
-            <label htmlFor="firstNameInput">First Name</label>
-          </div>
-          <div className="form-floating">
-            <input
-                type="text"
-                className="form-control"
-                size={50}
-                id="lastNameInput"
-                placeholder="Last Name"
-                onChange={(event) => setLastName(event.target.value)}
-            />
-            <label htmlFor="lastNameInput">Last Name</label>
-          </div>
-          <AuthenticationFields setAliasFunc={setAlias} setPasswordFunc={setPassword} bottomClass={false}/>
-          <div className="form-floating mb-3">
-            <input
-                type="file"
-                className="d-inline-block py-5 px-4 form-control bottom"
-                id="imageFileInput"
-                onChange={handleFileChange}
-            />
-            <label htmlFor="imageFileInput">User Image</label>
-            <img src={imageUrl} className="img-thumbnail" alt=""></img>
-          </div>
-        </>
+      <>
+        <div className="form-floating">
+          <input
+            type="text"
+            className="form-control"
+            size={50}
+            id="firstNameInput"
+            placeholder="First Name"
+            onChange={(event) => setFirstName(event.target.value)}
+          />
+          <label htmlFor="firstNameInput">First Name</label>
+        </div>
+        <div className="form-floating">
+          <input
+            type="text"
+            className="form-control"
+            size={50}
+            id="lastNameInput"
+            placeholder="Last Name"
+            onChange={(event) => setLastName(event.target.value)}
+          />
+          <label htmlFor="lastNameInput">Last Name</label>
+        </div>
+        <AuthenticationFields setAliasFunc={setAlias} setPasswordFunc={setPassword} bottomClass={false}/>
+        <div className="form-floating mb-3">
+          <input
+            type="file"
+            className="d-inline-block py-5 px-4 form-control bottom"
+            id="imageFileInput"
+            onChange={handleFileChange}
+          />
+          <label htmlFor="imageFileInput">User Image</label>
+          <img src={imageUrl} className="img-thumbnail" alt=""></img>
+        </div>
+      </>
     );
   };
 
   const switchAuthenticationMethodGenerator = () => {
     return (
-        <div className="mb-3">
-          Already registered? <Link to="/login">Sign in</Link>
-        </div>
+      <div className="mb-3">
+        Already registered? <Link to="/login">Sign in</Link>
+      </div>
     );
   };
 
   return (
-      <AuthenticationFormLayout
-          headingText="Please Register"
-          submitButtonLabel="Register"
-          oAuthHeading="Register with:"
-          inputFieldGenerator={inputFieldGenerator}
-          switchAuthenticationMethodGenerator={switchAuthenticationMethodGenerator}
-          setRememberMe={setRememberMe}
-          submitButtonDisabled={checkSubmitButtonStatus}
-          submit={doRegister}
-      />
+    <AuthenticationFormLayout
+      headingText="Please Register"
+      submitButtonLabel="Register"
+      oAuthHeading="Register with:"
+      inputFieldGenerator={inputFieldGenerator}
+      switchAuthenticationMethodGenerator={switchAuthenticationMethodGenerator}
+      setRememberMe={setRememberMe}
+      submitButtonDisabled={checkSubmitButtonStatus}
+      submit={doRegister}
+    />
   );
 };
 

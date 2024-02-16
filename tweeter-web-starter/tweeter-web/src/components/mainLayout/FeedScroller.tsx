@@ -1,19 +1,12 @@
 // FeedScroller.tsx
 import StatusItemScroller from "./StatusItemScroller";
-import {AuthToken, FakeData, Status, User} from "tweeter-shared";
+import {StatusItemView} from "../../presenter/StatusItems/StatusItemPresenter";
+import {FeedItemPresenter} from "../../presenter/StatusItems/FeedItemPresenter";
 
 const FeedScroller = () => {
-  const loadMoreFeedItems = async (
-      authToken: AuthToken,
-      user: User,
-      pageSize: number,
-      lastItem: Status | null
-  ): Promise<[Status[], boolean]> => {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.getPageOfStatuses(lastItem, pageSize);
-  };
-
-  return <StatusItemScroller loadMoreItems={loadMoreFeedItems} />;
+  return <StatusItemScroller
+    presenterGenerator={(view: StatusItemView) => new FeedItemPresenter(view)}
+  />;
 };
 
 export default FeedScroller;

@@ -3,10 +3,10 @@ import "bootstrap/dist/css/bootstrap.css";
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthenticationFormLayout from "../AuthenticationFormLayout";
-import { AuthToken, FakeData, User } from "tweeter-shared";
 import useToastListener from "../../toaster/ToastListenerHook";
-import AuthenticationFields from "../AuthenticationFields";
 import useUserInfo from "../../userInfo/UserInfoHook";
+import AuthenticationFields from "../AuthenticationFields";
+import {LoginPresenter, LoginView} from "../../../presenter/Authentication/LoginPresenter";
 
 interface Props {
   originalUrl?: string;
@@ -24,67 +24,47 @@ const Login = (props: Props) => {
   const rememberMeRef = useRef(rememberMe);
   rememberMeRef.current = rememberMe;
 
+  const listener: LoginView = {
+    navigate: navigate,
+    displayErrorMessage: displayErrorMessage,
+    updateUserInfo: updateUserInfo
+  }
+
+  const presenter = new LoginPresenter(listener)
+
   const checkSubmitButtonStatus = (): boolean => {
     return !alias || !password;
   };
 
   const doLogin = async () => {
-    try {
-      let [user, authToken] = await login(alias, password);
-
-      updateUserInfo(user, user, authToken, rememberMeRef.current);
-
-      if (!!props.originalUrl) {
-        navigate(props.originalUrl);
-      } else {
-        navigate("/");
-      }
-    } catch (error) {
-      displayErrorMessage(
-          `Failed to log user in because of exception: ${error}`
-      );
-    }
-  };
-
-  const login = async (
-      alias: string,
-      password: string
-  ): Promise<[User, AuthToken]> => {
-    // TODO: Replace with the result of calling the server
-    let user = FakeData.instance.firstUser;
-
-    if (user === null) {
-      throw new Error("Invalid alias or password");
-    }
-
-    return [user, FakeData.instance.authToken];
+    presenter.doLogin(alias, password, props.originalUrl, rememberMeRef.current)
   };
 
   const inputFieldGenerator = () => {
     return (
-        <AuthenticationFields setAliasFunc={setAlias} setPasswordFunc={setPassword} bottomClass={true}/>
+      <AuthenticationFields setAliasFunc={setAlias} setPasswordFunc={setPassword} bottomClass={true}/>
     );
   };
 
   const switchAuthenticationMethodGenerator = () => {
     return (
-        <div className="mb-3">
-          Not registered? <Link to="/register">Register</Link>
-        </div>
+      <div className="mb-3">
+        Not registered? <Link to="/register">Register</Link>
+      </div>
     );
   };
 
   return (
-      <AuthenticationFormLayout
-          headingText="Please Sign In"
-          submitButtonLabel="Sign in"
-          oAuthHeading="Sign in with:"
-          inputFieldGenerator={inputFieldGenerator}
-          switchAuthenticationMethodGenerator={switchAuthenticationMethodGenerator}
-          setRememberMe={setRememberMe}
-          submitButtonDisabled={checkSubmitButtonStatus}
-          submit={doLogin}
-      />
+    <AuthenticationFormLayout
+      headingText="Please Sign In"
+      submitButtonLabel="Sign in"
+      oAuthHeading="Sign in with:"
+      inputFieldGenerator={inputFieldGenerator}
+      switchAuthenticationMethodGenerator={switchAuthenticationMethodGenerator}
+      setRememberMe={setRememberMe}
+      submitButtonDisabled={checkSubmitButtonStatus}
+      submit={doLogin}
+    />
   );
 };
 
