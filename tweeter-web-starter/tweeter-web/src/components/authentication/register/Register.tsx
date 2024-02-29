@@ -44,7 +44,7 @@ const Register = () => {
   const presenter = new RegisterPresenter(listener)
 
   const doRegister = async () => {
-    presenter.doRegister(firstName,lastName,alias,password,imageBytes,rememberMeRef.current)
+    await presenter.doRegister(firstName, lastName, alias, password, imageBytes, rememberMeRef.current)
   };
 
   const inputFieldGenerator = () => {

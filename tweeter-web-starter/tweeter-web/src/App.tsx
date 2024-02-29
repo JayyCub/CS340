@@ -16,7 +16,7 @@ import StatusItemScroller from "./components/mainLayout/StatusItemScroller";
 import {UserItemView} from "./presenter/UserItems/UserItemPresenter";
 import {FollowingPresenter} from "./presenter/UserItems/FollowingPresenter";
 import {FollowersPresenter} from "./presenter/UserItems/FollowersPresenter";
-import {StatusItemPresenter, StatusItemView} from "./presenter/StatusItems/StatusItemPresenter";
+import {StatusItemView} from "./presenter/StatusItems/StatusItemPresenter";
 import {FeedItemPresenter} from "./presenter/StatusItems/FeedItemPresenter";
 import {StoryItemPresenter} from "./presenter/StatusItems/StoryItemPresenter";
 
