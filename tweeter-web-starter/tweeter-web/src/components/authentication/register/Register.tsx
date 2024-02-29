@@ -4,11 +4,16 @@ import { ChangeEvent, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthenticationFormLayout from "../AuthenticationFormLayout";
 import useToastListener from "../../toaster/ToastListenerHook";
+import AuthenticationFields from "../AuthenticationFields";
 import useUserInfo from "../../userInfo/UserInfoHook";
 import {RegisterPresenter, RegisterView} from "../../../presenter/Authentication/RegisterPresenter";
-import AuthenticationFields from "../AuthenticationFields";
 
-const Register = () => {
+
+interface Props {
+  presenterGenerator: (view: RegisterView) => RegisterPresenter;
+}
+
+const Register = (props: Props) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [alias, setAlias] = useState("");
@@ -24,6 +29,16 @@ const Register = () => {
   const { updateUserInfo } = useUserInfo();
   const { displayErrorMessage } = useToastListener();
 
+  const listener: RegisterView = {
+    updateUserInfo: updateUserInfo,
+    displayErrorMessage: displayErrorMessage,
+    navigate: (url: string) => navigate(url),
+    setImageUrl: (url: string) => setImageUrl(url),
+    setImageBytes: (image: Uint8Array) => setImageBytes(image),
+  };
+
+  const [presenter] = useState(props.presenterGenerator(listener));
+
   const checkSubmitButtonStatus = (): boolean => {
     return !firstName || !lastName || !alias || !password || !imageUrl;
   };
@@ -32,17 +47,6 @@ const Register = () => {
     const file = event.target.files?.[0];
     presenter.handleImageFile(file);
   };
-
-  const listener: RegisterView = {
-    navigate: navigate,
-    displayErrorMessage: displayErrorMessage,
-    updateUserInfo: updateUserInfo,
-    setImageBytes: setImageBytes,
-    setImageUrl: setImageUrl,
-  }
-
-  const presenter = new RegisterPresenter(listener)
-
   const doRegister = async () => {
     await presenter.doRegister(firstName, lastName, alias, password, imageBytes, rememberMeRef.current)
   };

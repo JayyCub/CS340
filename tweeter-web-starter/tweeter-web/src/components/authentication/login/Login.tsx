@@ -4,12 +4,14 @@ import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthenticationFormLayout from "../AuthenticationFormLayout";
 import useToastListener from "../../toaster/ToastListenerHook";
-import useUserInfo from "../../userInfo/UserInfoHook";
 import AuthenticationFields from "../AuthenticationFields";
-import {LoginPresenter, LoginView} from "../../../presenter/Authentication/LoginPresenter";
+import useUserInfo from "../../userInfo/UserInfoHook";
+import {AuthenticationView} from "../../../presenter/Authentication/AuthPresenter";
+import {LoginPresenter} from "../../../presenter/Authentication/LoginPresenter";
 
 interface Props {
   originalUrl?: string;
+  presenterGenerator: (view: AuthenticationView) => LoginPresenter;
 }
 
 const Login = (props: Props) => {
@@ -24,25 +26,42 @@ const Login = (props: Props) => {
   const rememberMeRef = useRef(rememberMe);
   rememberMeRef.current = rememberMe;
 
-  const listener: LoginView = {
-    navigate: navigate,
+  const listener: AuthenticationView = {
+    updateUserInfo: updateUserInfo,
     displayErrorMessage: displayErrorMessage,
-    updateUserInfo: updateUserInfo
-  }
+    navigate: (url: string) => navigate(url),
+  };
 
-  const presenter = new LoginPresenter(listener)
+  const [presenter] = useState(props.presenterGenerator(listener));
+
+  const doLogin = async () => {
+    presenter.doLogin(
+      props.originalUrl,
+      alias,
+      password,
+      rememberMeRef.current
+    );
+  };
 
   const checkSubmitButtonStatus = (): boolean => {
     return !alias || !password;
   };
 
-  const doLogin = async () => {
-    presenter.doLogin(alias, password, props.originalUrl, rememberMeRef.current)
+  const onAliasEvent = (s: string) => {
+    setAlias(s);
+  };
+
+  const onPasswordEvent = (s: string) => {
+    setPassword(s);
   };
 
   const inputFieldGenerator = () => {
     return (
-      <AuthenticationFields setAliasFunc={setAlias} setPasswordFunc={setPassword} bottomClass={true}/>
+      <AuthenticationFields
+        setAliasFunc={onAliasEvent}
+        setPasswordFunc={onPasswordEvent}
+        bottomClass={true}
+      />
     );
   };
 

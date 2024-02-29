@@ -19,6 +19,9 @@ import {FollowersPresenter} from "./presenter/UserItems/FollowersPresenter";
 import {StatusItemView} from "./presenter/StatusItems/StatusItemPresenter";
 import {FeedItemPresenter} from "./presenter/StatusItems/FeedItemPresenter";
 import {StoryItemPresenter} from "./presenter/StatusItems/StoryItemPresenter";
+import {LoginPresenter} from "./presenter/Authentication/LoginPresenter";
+import {RegisterPresenter, RegisterView} from "./presenter/Authentication/RegisterPresenter";
+import {AuthenticationView} from "./presenter/Authentication/AuthPresenter";
 
 const App = () => {
   const { currentUser, authToken } = useUserInfo();
@@ -86,9 +89,37 @@ const UnauthenticatedRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="*" element={<Login originalUrl={location.pathname} />} />
+      <Route
+        path="/login"
+        element={
+          <Login
+            presenterGenerator={(view: AuthenticationView) =>
+              new LoginPresenter(view)
+            }
+          />
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <Register
+            presenterGenerator={(view: RegisterView) =>
+              new RegisterPresenter(view)
+            }
+          />
+        }
+      />
+      <Route
+        path="*"
+        element={
+          <Login
+            originalUrl={location.pathname}
+            presenterGenerator={(view: AuthenticationView) =>
+              new LoginPresenter(view)
+            }
+          />
+        }
+      />
     </Routes>
   );
 };

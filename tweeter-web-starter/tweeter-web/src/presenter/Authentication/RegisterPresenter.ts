@@ -1,23 +1,23 @@
-import { NavigateOptions, To } from "react-router-dom";
-import { AuthToken, User } from "tweeter-shared";
-import { Buffer } from "buffer";
-import {UserService} from "../../model/service/UserService";
+import {Buffer} from "buffer";
+import {AuthenticationPresenter, AuthenticationView} from "./AuthPresenter";
+import {AuthService} from "../../model/service/AuthService";
 
-export interface RegisterView {
-  navigate: (to: To, options?: NavigateOptions | undefined) => void;
-  displayErrorMessage: (message: string, bootstrapClasses?: string | undefined) => void;
-  updateUserInfo: (currentUser: User, displayedUser: User | null, authToken: AuthToken, remember: boolean) => void
-  setImageUrl: (value: React.SetStateAction<string>) => void;
-  setImageBytes: (value: React.SetStateAction<Uint8Array>) => void;
+export interface RegisterView extends AuthenticationView {
+  setImageUrl: (url: string) => void;
+  setImageBytes: (image: Uint8Array) => void;
 }
 
-export class RegisterPresenter {
-  private service: UserService;
-  private view: RegisterView;
+export class RegisterPresenter extends AuthenticationPresenter<AuthService> {
+  protected createService(): AuthService {
+    return new AuthService();
+  }
 
   public constructor(view: RegisterView) {
-    this.service = new UserService();
-    this.view = view
+    super(view);
+  }
+
+  protected get view(): RegisterView {
+    return super.view as RegisterView;
   }
 
   public async doRegister(
@@ -26,9 +26,9 @@ export class RegisterPresenter {
     alias: string,
     password: string,
     imageBytes: Uint8Array,
-    rememberMe: boolean
+    rememberMeRefVal: boolean
   ) {
-    try {
+    await this.doFailureReportingOperation(async () => {
       let [user, authToken] = await this.service.register(
         firstName,
         lastName,
@@ -36,14 +36,14 @@ export class RegisterPresenter {
         password,
         imageBytes
       );
-
-      this.view.updateUserInfo(user, user, authToken, rememberMe);
-      this.view.navigate("/");
-    } catch (error) {
-      this.view.displayErrorMessage(
-        `Failed to register user because of exception: ${error}`
+      this.updateAndNavigate(
+        user,
+        user,
+        authToken,
+        rememberMeRefVal,
+        "/"
       );
-    }
+    }, "register user");
   }
 
   public handleImageFile(file: File | undefined) {

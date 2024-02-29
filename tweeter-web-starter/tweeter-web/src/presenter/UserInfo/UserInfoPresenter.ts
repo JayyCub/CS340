@@ -1,22 +1,23 @@
 import { AuthToken, User } from "tweeter-shared";
-import {UserService} from "../../model/service/UserService";
+import {AuthService} from "../../model/service/AuthService";
+import {MessageView, Presenter} from "../Presenter";
 
-export interface UserInfoView {
+export interface UserInfoView extends MessageView {
   setIsFollower: React.Dispatch<React.SetStateAction<boolean>>,
-  displayErrorMessage: (message: string, bootstrapClasses?: string | undefined) => void
   setFolloweesCount: React.Dispatch<React.SetStateAction<number>>
   setFollowersCount: React.Dispatch<React.SetStateAction<number>>
-  clearLastInfoMessage: () => void;
-  displayInfoMessage: (message: string, duration: number, bootstrapClasses?: string | undefined) => void
 }
 
-export class UserInfoPresenter {
-  private view: UserInfoView;
-  private service: UserService;
+export class UserInfoPresenter extends Presenter {
+  private service: AuthService;
 
   public constructor(view: UserInfoView) {
-    this.service = new UserService();
-    this.view = view;
+    super(view);
+    this.service = new AuthService();
+  }
+
+  protected get view(): UserInfoView {
+    return super.view as UserInfoView;
   }
 
   public async setIsFollowerStatus (
@@ -24,7 +25,7 @@ export class UserInfoPresenter {
     currentUser: User,
     displayedUser: User
   ) {
-    try {
+    await this.doFailureReportingOperation(async () => {
       if (currentUser === displayedUser) {
         this.view.setIsFollower(false);
       } else {
@@ -32,62 +33,43 @@ export class UserInfoPresenter {
           await this.service.getIsFollowerStatus(authToken!, currentUser!, displayedUser!)
         );
       }
-    } catch (error) {
-      this.view.displayErrorMessage(
-        `Failed to determine follower status because of exception: ${error}`
-      );
-    }
+    }, "determine follower status")
   };
 
   public async setNumbFollowees (
     authToken: AuthToken,
     displayedUser: User
   ) {
-    try {
+    await this.doFailureReportingOperation(async () => {
       this.view.setFolloweesCount(await this.service.getFolloweesCount(authToken, displayedUser));
-    } catch (error) {
-      this.view.displayErrorMessage(
-        `Failed to get followees count because of exception: ${error}`
-      );
-    }
+    }, "get followees count")
   };
 
   public async setNumbFollowers (
     authToken: AuthToken,
     displayedUser: User
   ) {
-    try {
+    await this.doFailureReportingOperation(async () => {
       this.view.setFollowersCount(await this.service.getFollowersCount(authToken, displayedUser));
-    } catch (error) {
-      this.view.displayErrorMessage(
-        `Failed to get followers count because of exception: ${error}`
-      );
-    }
+    }, "get followers count")
   };
 
   public async followUser(authToken: AuthToken, user: User) {
-    try {
+    await this.doFailureReportingOperation(async () => {
       this.view.displayInfoMessage(`Adding ${user!.name} to followers...`, 0);
-
       let [followersCount, followeesCount] = await this.service.follow(
         authToken,
         user
       );
-
       this.view.clearLastInfoMessage();
-
       this.view.setIsFollower(true);
       this.view.setFollowersCount(followersCount);
       this.view.setFolloweesCount(followeesCount);
-    } catch (error) {
-      this.view.displayErrorMessage(
-        `Failed to follow user because of exception: ${error}`
-      );
-    }
+    }, "follow user")
   }
 
   public async unfollowUser(authToken: AuthToken, user: User) {
-    try {
+    await this.doFailureReportingOperation(async () => {
       this.view.displayInfoMessage(
         `Removing ${user!.name} from followers...`,
         0
@@ -97,17 +79,12 @@ export class UserInfoPresenter {
         authToken!,
         user!
       );
-
       this.view.clearLastInfoMessage();
-
       this.view.setIsFollower(false);
       this.view.setFollowersCount(followersCount);
       this.view.setFolloweesCount(followeesCount);
-    } catch (error) {
-      this.view.displayErrorMessage(
-        `Failed to unfollow user because of exception: ${error}`
-      );
-    }
+
+    }, "unfollow user")
   }
 
 
