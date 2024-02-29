@@ -1,18 +1,18 @@
-import { Status } from "tweeter-shared";
 import { useState, useRef, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useToastListener from "../toaster/ToastListenerHook";
-import StatusItem from "../statusItem/StatusItem";
 import useUserInfo from "../userInfo/UserInfoHook";
-import {StatusItemPresenter, StatusItemView} from "../../presenter/StatusItems/StatusItemPresenter";
+import { PagedItemPresenter, PagedItemView } from "../../presenter/PagedItemPresenter";
 
-interface Props {
-  presenterGenerator: (view: StatusItemView) => StatusItemPresenter;
+
+interface Prop<T, U> {
+  presenterGenerator: (view: PagedItemView<T>) => PagedItemPresenter<T, U>;
+  itemComponentGenerator: (item: T) => JSX.Element;
 }
 
-const StatusItemScroller = (props: Props) => {
+const ItemScroller = <T, U>(props: Prop<T, U>) => {
   const { displayErrorMessage } = useToastListener();
-  const [items, setItems] = useState<Status[]>([]);
+  const [items, setItems] = useState<T[]>([]);
 
   // Required to allow the addItems method to see the current value of 'items'
   // instead of the value from when the closure was created.
@@ -23,20 +23,19 @@ const StatusItemScroller = (props: Props) => {
 
   // Load initial items
   useEffect(() => {
-    loadMore();
+    loadMoreItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const listener: StatusItemView = {
-    addItems: (newItems: Status[]) =>
-      setItems([...itemsReference.current, ...newItems]),
+  const listener: PagedItemView<T> = {
+    addItems: (newItems: T[]) => setItems([...itemsReference.current, ...newItems]),
     displayErrorMessage: displayErrorMessage,
-  };
+  }
 
   const [presenter] = useState(props.presenterGenerator(listener));
 
-  const loadMore = async () => {
-    presenter.loadMoreItems(authToken!, displayedUser!);
+  const loadMoreItems = async () => {
+    await presenter.loadMoreItems(authToken!, displayedUser!);
   };
 
   return (
@@ -44,7 +43,7 @@ const StatusItemScroller = (props: Props) => {
       <InfiniteScroll
         className="pr-0 mr-0"
         dataLength={items.length}
-        next={loadMore}
+        next={loadMoreItems}
         hasMore={presenter.hasMoreItems}
         loader={<h4>Loading...</h4>}
       >
@@ -53,7 +52,7 @@ const StatusItemScroller = (props: Props) => {
             key={index}
             className="row mb-3 mx-0 px-0 border rounded bg-white"
           >
-            <StatusItem value={item} />
+            {props.itemComponentGenerator(item)}
           </div>
         ))}
       </InfiniteScroll>
@@ -61,4 +60,4 @@ const StatusItemScroller = (props: Props) => {
   );
 };
 
-export default StatusItemScroller;
+export default ItemScroller;
