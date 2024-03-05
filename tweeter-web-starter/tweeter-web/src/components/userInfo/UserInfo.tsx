@@ -5,26 +5,30 @@ import useToastListener from "../toaster/ToastListenerHook";
 import useUserInfo from "./UserInfoHook";
 import {UserInfoPresenter, UserInfoView} from "../../presenter/UserInfo/UserInfoPresenter";
 
-const UserInfo = () => {
+interface Props {
+  presenterGenerator: (view: UserInfoView) => UserInfoPresenter;
+}
+
+const UserInfo = (props: Props) => {
   const [isFollower, setIsFollower] = useState(false);
   const [followeesCount, setFolloweesCount] = useState(-1);
   const [followersCount, setFollowersCount] = useState(-1);
   const { displayErrorMessage, displayInfoMessage, clearLastInfoMessage } =
     useToastListener();
 
+  const listener: UserInfoView = {
+    setIsFollower: (value: boolean) => setIsFollower(value),
+    setFolloweesCount: (value: number) => setFolloweesCount(value),
+    setFollowersCount: (value: number) => setFollowersCount(value),
+    displayErrorMessage: displayErrorMessage,
+    displayInfoMessage: displayInfoMessage,
+    clearLastInfoMessage: clearLastInfoMessage,
+  };
+
+  const [presenter] = useState(props.presenterGenerator(listener));
+
   const { currentUser, authToken, displayedUser, setDisplayedUser } =
     useUserInfo();
-
-  const listener: UserInfoView = {
-    setIsFollower: setIsFollower,
-    displayErrorMessage: displayErrorMessage,
-    setFolloweesCount: setFolloweesCount,
-    setFollowersCount: setFollowersCount,
-    clearLastInfoMessage: clearLastInfoMessage,
-    displayInfoMessage: displayInfoMessage,
-  }
-
-  const presenter = new UserInfoPresenter(listener)
 
   if (!displayedUser) {
     setDisplayedUser(currentUser!);
@@ -46,7 +50,7 @@ const UserInfo = () => {
   ): Promise<void> => {
     event.preventDefault();
 
-    presenter.followUser(authToken!, displayedUser!)
+    await presenter.followDisplayedUser(authToken!, displayedUser!)
   };
 
   const unfollowDisplayedUser = async (
@@ -54,7 +58,7 @@ const UserInfo = () => {
   ): Promise<void> => {
     event.preventDefault();
 
-    presenter.unfollowUser(authToken!, displayedUser!)
+    await presenter.unfollowDisplayedUser(authToken!, displayedUser!)
   };
 
   return (

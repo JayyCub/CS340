@@ -1,32 +1,54 @@
-import './AppNavbar.css'
-import { Container, Nav, Navbar } from 'react-bootstrap'
-import { NavLink, useLocation } from 'react-router-dom'
-import Image from 'react-bootstrap/Image'
-import useToastListener from '../toaster/ToastListenerHook'
-import useUserInfo from '../userInfo/UserInfoHook'
-import { NavbarPresenter, NavbarView } from '../../presenter/NavbarPresenter'
+import "./AppNavbar.css";
+import { Container, Nav, Navbar } from "react-bootstrap";
+import { NavLink, useLocation } from "react-router-dom";
+import Image from "react-bootstrap/Image";
+import useToastListener from "../toaster/ToastListenerHook";
+import useUserInfo from "../userInfo/UserInfoHook";
+import { AppNavbarPresenter, AppNavbarView } from "../../presenter/AppNavbarPresenter";
+import { useState } from "react";
 
-const AppNavbar = () => {
-  const location = useLocation()
-  const { authToken, clearUserInfo } = useUserInfo()
-  const { displayInfoMessage, displayErrorMessage, clearLastInfoMessage } = useToastListener()
+interface Props {
+  presenterGenerator: (view: AppNavbarView) => AppNavbarPresenter;
+}
 
-  const view: NavbarView = {
+const AppNavbar = (props: Props) => {
+  const location = useLocation();
+  const { authToken, clearUserInfo } = useUserInfo();
+  const { displayInfoMessage, displayErrorMessage, clearLastInfoMessage } =
+    useToastListener();
+
+  let pathname: string = location.pathname;
+
+  const listener: AppNavbarView = {
+    displayInfoMessage: displayInfoMessage,
+    clearLastInfoMessage: clearLastInfoMessage,
     clearUserInfo: clearUserInfo,
     displayErrorMessage: displayErrorMessage,
-    clearLastInfoMessage: clearLastInfoMessage,
-    displayInfoMessage: displayInfoMessage,
-  }
-  const presenter = new NavbarPresenter(view)
+    navigateToLogin: () => {
+      pathname = location.pathname;
+    },
+  };
+
+  const [presenter] = useState(props.presenterGenerator(listener));
+
+  const logOut = async () => {
+    presenter.logOut(authToken!);
+  };
 
   return (
-    <Navbar collapseOnSelect className="mb-4" expand="md" bg="primary" variant="dark">
+    <Navbar
+      collapseOnSelect
+      className="mb-4"
+      expand="md"
+      bg="primary"
+      variant="dark"
+    >
       <Container>
         <Navbar.Brand>
           <div className="d-flex flex-row">
             <div className="p-2">
               <NavLink className="brand-link" to="/">
-                <Image src={'./bird-white-32.png'} alt="" />
+                <Image src={"./bird-white-32.png"} alt="" />
               </NavLink>
             </div>
             <div id="brand-title" className="p-3">
@@ -52,7 +74,7 @@ const AppNavbar = () => {
               <NavLink to="/followers">Followers</NavLink>
             </Nav.Item>
             <Nav.Item>
-              <NavLink id="logout" onClick={() => presenter.logOut(authToken!!)} to={location.pathname}>
+              <NavLink id="logout" onClick={logOut} to={pathname}>
                 Logout
               </NavLink>
             </Nav.Item>
@@ -60,7 +82,7 @@ const AppNavbar = () => {
         </Navbar.Collapse>
       </Container>
     </Navbar>
-  )
-}
+  );
+};
 
-export default AppNavbar
+export default AppNavbar;

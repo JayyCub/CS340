@@ -1,11 +1,11 @@
 import { AuthToken, User } from "tweeter-shared";
-import {AuthService} from "../../model/service/AuthService";
 import {MessageView, Presenter} from "../Presenter";
+import {AuthService} from "../../model/service/AuthService";
 
 export interface UserInfoView extends MessageView {
-  setIsFollower: React.Dispatch<React.SetStateAction<boolean>>,
-  setFolloweesCount: React.Dispatch<React.SetStateAction<number>>
-  setFollowersCount: React.Dispatch<React.SetStateAction<number>>
+  setIsFollower: (value: boolean) => void;
+  setFolloweesCount: (value: number) => void;
+  setFollowersCount: (value: number) => void;
 }
 
 export class UserInfoPresenter extends Presenter {
@@ -20,72 +20,88 @@ export class UserInfoPresenter extends Presenter {
     return super.view as UserInfoView;
   }
 
-  public async setIsFollowerStatus (
+  public async setIsFollowerStatus(
     authToken: AuthToken,
     currentUser: User,
     displayedUser: User
-  ) {
+  ): Promise<void> {
     await this.doFailureReportingOperation(async () => {
       if (currentUser === displayedUser) {
         this.view.setIsFollower(false);
       } else {
         this.view.setIsFollower(
-          await this.service.getIsFollowerStatus(authToken!, currentUser!, displayedUser!)
+          await this.service.getIsFollowerStatus(
+            authToken!,
+            currentUser!,
+            displayedUser!
+          )
         );
       }
-    }, "determine follower status")
-  };
+    }, "determine follower status");
+  }
 
-  public async setNumbFollowees (
+  public async setNumbFollowees(
     authToken: AuthToken,
     displayedUser: User
-  ) {
+  ): Promise<void> {
     await this.doFailureReportingOperation(async () => {
-      this.view.setFolloweesCount(await this.service.getFolloweesCount(authToken, displayedUser));
-    }, "get followees count")
-  };
-
-  public async setNumbFollowers (
-    authToken: AuthToken,
-    displayedUser: User
-  ) {
-    await this.doFailureReportingOperation(async () => {
-      this.view.setFollowersCount(await this.service.getFollowersCount(authToken, displayedUser));
-    }, "get followers count")
-  };
-
-  public async followUser(authToken: AuthToken, user: User) {
-    await this.doFailureReportingOperation(async () => {
-      this.view.displayInfoMessage(`Adding ${user!.name} to followers...`, 0);
-      let [followersCount, followeesCount] = await this.service.follow(
-        authToken,
-        user
+      this.view.setFolloweesCount(
+        await this.service.getFolloweesCount(authToken, displayedUser)
       );
+    }, "get followees count");
+  }
+
+  public async setNumbFollowers(
+    authToken: AuthToken,
+    displayedUser: User
+  ): Promise<void> {
+    await this.doFailureReportingOperation(async () => {
+      this.view.setFollowersCount(
+        await this.service.getFollowersCount(authToken, displayedUser)
+      );
+    }, "get followers count");
+  }
+
+  public async followDisplayedUser(authToken: AuthToken, displayedUser: User) {
+    await this.doFailureReportingOperation(async () => {
+      this.view.displayInfoMessage(
+        `Adding ${displayedUser.name} to followers...`,
+        0
+      );
+
+      let [followersCount, followeesCount] = await this.service.follow(
+        authToken!,
+        displayedUser!
+      );
+
       this.view.clearLastInfoMessage();
+
       this.view.setIsFollower(true);
       this.view.setFollowersCount(followersCount);
       this.view.setFolloweesCount(followeesCount);
-    }, "follow user")
+    }, "follow user");
   }
 
-  public async unfollowUser(authToken: AuthToken, user: User) {
+  public async unfollowDisplayedUser(
+    authToken: AuthToken,
+    displayedUser: User
+  ) {
     await this.doFailureReportingOperation(async () => {
       this.view.displayInfoMessage(
-        `Removing ${user!.name} from followers...`,
+        `Removing ${displayedUser!.name} from followers...`,
         0
       );
 
       let [followersCount, followeesCount] = await this.service.unfollow(
         authToken!,
-        user!
+        displayedUser!
       );
+
       this.view.clearLastInfoMessage();
+
       this.view.setIsFollower(false);
       this.view.setFollowersCount(followersCount);
       this.view.setFolloweesCount(followeesCount);
-
-    }, "unfollow user")
+    }, "unfollow user");
   }
-
-
 }
