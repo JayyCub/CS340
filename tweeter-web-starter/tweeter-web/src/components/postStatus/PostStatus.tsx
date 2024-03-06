@@ -1,6 +1,5 @@
 import "./PostStatus.css";
-import { useState } from "react";
-import { AuthToken, Status } from "tweeter-shared";
+import React, { useState } from "react";
 import useToastListener from "../toaster/ToastListenerHook";
 import useUserInfo from "../userInfo/UserInfoHook";
 import {
@@ -30,7 +29,7 @@ const PostStatus = (props: Props) => {
 
   const submitPost = async (event: React.MouseEvent) => {
     event.preventDefault();
-    presenter.submitPost(post, currentUser!, authToken!);
+    await presenter.submitPost(post, currentUser!, authToken!);
   };
 
   const clearPost = (event: React.MouseEvent) => {
@@ -48,6 +47,7 @@ const PostStatus = (props: Props) => {
         <textarea
           className="form-control"
           id="postStatusTextArea"
+          aria-label="postTextArea"
           rows={10}
           placeholder="What's on your mind?"
           value={post}
@@ -59,6 +59,7 @@ const PostStatus = (props: Props) => {
       <div className="form-group">
         <button
           id="postStatusButton"
+          aria-label="postButton"
           className="btn btn-md btn-primary me-1"
           type="button"
           disabled={checkButtonStatus()}
@@ -68,6 +69,7 @@ const PostStatus = (props: Props) => {
         </button>
         <button
           id="clearStatusButton"
+          aria-label="clearButton"
           className="btn btn-md btn-secondary"
           type="button"
           disabled={checkButtonStatus()}
