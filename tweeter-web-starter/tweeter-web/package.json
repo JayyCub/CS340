@@ -33,7 +33,7 @@
     "verbose": true,
     "testEnvironment": "jsdom",
     "moduleNameMapper": {
-      "\\.(css|less)$": "<rootDir>/test/__mocks__/styleMock.js"
+      "\\.(css|less)$": "<rootDir>/test/__mocks__/styleMocks.js"
     },
     "testMatch": [
       "<rootDir>/test/**/*.test.tsx",

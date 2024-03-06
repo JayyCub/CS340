@@ -16,6 +16,7 @@ const AuthenticationFields = (props: Props) => {
                     className="form-control"
                     size={50}
                     id="aliasInput"
+                    aria-label="alias"
                     placeholder="name@example.com"
                     onChange={(event) => props.setAliasFunc(event.target.value)}/>
                 <label htmlFor="aliasInput">Alias</label>
@@ -25,6 +26,7 @@ const AuthenticationFields = (props: Props) => {
                     type="password"
                     className={passwordClassInner}
                     id="passwordInput"
+                    aria-label="password"
                     placeholder="Password"
                     onChange={(event) => props.setPasswordFunc(event.target.value)}/>
                 <label htmlFor="passwordInput">Password</label>
