@@ -18,7 +18,8 @@ describe("Login Component", () => {
   });
 
   it("enables the sign-in button if both alias and password fields have text.", async () => {
-    const {signInButton, aliasField, passwordField, user} = renderLoginAndGetElements("/");
+    const {signInButton, aliasField, passwordField, user} =
+      renderLoginAndGetElements("/");
 
     await user.type(aliasField, "name");
     await user.type(passwordField, "pass");
@@ -26,7 +27,8 @@ describe("Login Component", () => {
   });
 
   it("disables the sign in button if either field is cleared.", async () => {
-    const {signInButton, aliasField, passwordField, user} = renderLoginAndGetElements("/");
+    const {signInButton, aliasField, passwordField, user} =
+      renderLoginAndGetElements("/");
 
     await user.type(aliasField, "name");
     await user.type(passwordField, "pass");
