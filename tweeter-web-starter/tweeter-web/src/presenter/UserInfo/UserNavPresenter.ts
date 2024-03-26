@@ -1,5 +1,5 @@
 import { AuthToken, User } from "tweeter-shared";
-import {AuthService} from "../../model/service/AuthService";
+import {UserService} from "../../model/service/UserService";
 import {Presenter, View} from "../Presenter";
 
 export interface UserNavView extends View {
@@ -7,11 +7,11 @@ export interface UserNavView extends View {
 }
 
 export class UserNavPresenter extends Presenter {
-  private service: AuthService;
+  private service: UserService;
 
   public constructor(view: UserNavView) {
     super(view);
-    this.service = new AuthService;
+    this.service = new UserService;
   }
 
   protected get view(): UserNavView {

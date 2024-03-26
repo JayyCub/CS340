@@ -1,15 +1,15 @@
 import {Buffer} from "buffer";
 import {AuthenticationPresenter, AuthenticationView} from "./AuthPresenter";
-import {AuthService} from "../../model/service/AuthService";
+import {UserService} from "../../model/service/UserService";
 
 export interface RegisterView extends AuthenticationView {
   setImageUrl: (url: string) => void;
   setImageBytes: (image: Uint8Array) => void;
 }
 
-export class RegisterPresenter extends AuthenticationPresenter<AuthService> {
-  protected createService(): AuthService {
-    return new AuthService();
+export class RegisterPresenter extends AuthenticationPresenter<UserService> {
+  protected createService(): UserService {
+    return new UserService();
   }
 
   public constructor(view: RegisterView) {

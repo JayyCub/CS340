@@ -26,7 +26,7 @@ import {LoginPresenter} from "./presenter/Authentication/LoginPresenter";
 import {RegisterPresenter, RegisterView} from "./presenter/Authentication/RegisterPresenter";
 
 const App = () => {
-  const { currentUser, authToken } = useUserInfo();;
+  const { currentUser, authToken } = useUserInfo();
 
   const isAuthenticated = (): boolean => {
     return !!currentUser && !!authToken;

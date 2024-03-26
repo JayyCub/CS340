@@ -1,12 +1,12 @@
 import { AppNavbarPresenter, AppNavbarView } from "../../src/presenter/AppNavbarPresenter";
 import {anything, instance, mock, spy, verify, when} from "ts-mockito";
 import {AuthToken} from "tweeter-shared";
-import {AuthService} from "../../src/model/service/AuthService";
+import {UserService} from "../../src/model/service/UserService";
 
 describe("AppNavBarPresenter", () => {
   let mockAppNavBarPresenterView: AppNavbarView;
   let appNavBarPresenter: AppNavbarPresenter;
-  let mockAuthService: AuthService;
+  let mockAuthService: UserService;
 
   const authToken = new AuthToken("token_123", Date.now())
 
@@ -17,7 +17,7 @@ describe("AppNavBarPresenter", () => {
     const appNavBarPresenterSpy = spy(new AppNavbarPresenter(mockAppNavBarPresenterInstance));
     appNavBarPresenter = instance(appNavBarPresenterSpy);
 
-    mockAuthService = mock<AuthService>();
+    mockAuthService = mock<UserService>();
     const mockAuthServiceInstance = instance(mockAuthService);
 
     when(appNavBarPresenterSpy.authService).thenReturn(mockAuthServiceInstance);

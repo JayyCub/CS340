@@ -1,5 +1,5 @@
 import { AuthToken } from 'tweeter-shared'
-import {AuthService} from "../model/service/AuthService";
+import {UserService} from "../model/service/UserService";
 import {MessageView, Presenter} from "./Presenter";
 
 export interface AppNavbarView extends MessageView {
@@ -8,10 +8,10 @@ export interface AppNavbarView extends MessageView {
 }
 
 export class AppNavbarPresenter extends Presenter {
-  private _authService: AuthService;
+  private _authService: UserService;
   constructor(view: AppNavbarView) {
     super(view);
-    this._authService = new AuthService();
+    this._authService = new UserService();
   }
 
   protected get view(): AppNavbarView {

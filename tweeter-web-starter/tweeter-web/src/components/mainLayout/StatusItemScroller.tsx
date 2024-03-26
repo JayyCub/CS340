@@ -36,7 +36,7 @@ const StatusItemScroller = (props: Props) => {
   const [presenter] = useState(props.presenterGenerator(listener));
 
   const loadMore = async () => {
-    presenter.loadMoreItems(authToken!, displayedUser!);
+    await presenter.loadMoreItems(authToken!, displayedUser!);
   };
 
   return (

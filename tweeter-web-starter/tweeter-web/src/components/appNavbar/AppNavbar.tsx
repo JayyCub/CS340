@@ -32,7 +32,7 @@ const AppNavbar = (props: Props) => {
   const [presenter] = useState(props.presenterGenerator(listener));
 
   const logOut = async () => {
-    presenter.logOut(authToken!);
+    await presenter.logOut(authToken!);
   };
 
   return (

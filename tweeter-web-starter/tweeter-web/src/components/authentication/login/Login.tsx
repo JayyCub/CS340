@@ -35,7 +35,7 @@ const Login = (props: Props) => {
   const [presenter] = useState(props.presenterGenerator(listener));
 
   const doLogin = async () => {
-    presenter.doLogin(
+    await presenter.doLogin(
       props.originalUrl,
       alias,
       password,
