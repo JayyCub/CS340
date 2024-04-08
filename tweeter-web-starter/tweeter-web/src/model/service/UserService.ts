@@ -10,7 +10,6 @@ import { Buffer } from "buffer";
 import {ServerFacade} from "../../network/ServerFacade";
 import {LogoutRequest} from "tweeter-shared/dist/model/network/Request";
 
-
 export class UserService {
   private serverFacade = new ServerFacade();
 
