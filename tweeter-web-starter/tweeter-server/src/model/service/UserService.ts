@@ -1,26 +1,53 @@
-import { User, AuthToken, FakeData } from "tweeter-shared";
+import {UsersDAO} from "../dao/interfaces/UsersDAO";
+import {AuthTokensDAO} from "../dao/interfaces/AuthTokensDAO";
+import {ImagesDAO} from "../dao/interfaces/ImagesDAO";
+import {DAOFactory} from "../dao/interfaces/DAOFactory";
+import {AuthToken, User} from "tweeter-shared";
 
 export class UserService {
+  private usersDAO: UsersDAO;
+  private authTokensDAO: AuthTokensDAO;
+  private imagesDAO: ImagesDAO;
+
+  constructor(daoFactory: DAOFactory) {
+    this.authTokensDAO = daoFactory.getAuthTokensDAO();
+    this.usersDAO = daoFactory.getUsersDAO();
+    this.imagesDAO = daoFactory.getImageDAO();
+  }
+
   public async getUser(
     authToken: AuthToken,
     alias: string
   ): Promise<User | null> {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.findUserByAlias(alias);
+    let newToken = AuthToken.fromJson(JSON.stringify(authToken));
+    if (!newToken?.token) {
+      throw new Error("[Bad Request] Missing auth token string");
+    }
+
+    let auth: boolean = await this.authTokensDAO.validateToken(newToken);
+    if (!auth) {
+      throw new Error("[Server Error] Could not validate Auth Token");
+    }
+
+    return await this.usersDAO.getUser(alias);
   }
 
   public async login(
     alias: string,
     password: string
   ): Promise<[User, AuthToken]> {
-    // TODO: Replace with the result of calling the server
-    let user = FakeData.instance.firstUser;
 
-    if (user === null) {
-      throw new Error("Invalid alias or password");
+    let user = await this.usersDAO.loginUser(alias, password);
+    if (user === null || user === undefined) {
+      throw new Error("[Bad Request] Invalid alias or password");
     }
 
-    return [user, FakeData.instance.authToken];
+    let authToken = await this.authTokensDAO.putAuthToken(AuthToken.Generate(), alias);
+    if (authToken === null) {
+      throw new Error("[Server Error] Could not create auth token.");
+    }
+
+    return [user, authToken];
   }
 
   public async register(
@@ -29,19 +56,29 @@ export class UserService {
     alias: string,
     password: string,
     imageStringBase64: string
-  ): Promise<[User, AuthToken]> {
-    // TODO: Replace with the result of calling the server
-    let user = FakeData.instance.firstUser;
+  ): Promise<[boolean, User, AuthToken]> {
+    let imageUrl = await this.imagesDAO.putImage(alias+"_image", imageStringBase64);
+
+    let user = await this.usersDAO.registerUser(
+      new User(firstName, lastName, alias, imageUrl, password));
 
     if (user === null) {
-      throw new Error("Invalid registration");
+      throw new Error("[Bad Request] Invalid registration.");
     }
 
-    return [user, FakeData.instance.authToken];
+    let authToken = await this.authTokensDAO.putAuthToken(AuthToken.Generate(), alias);
+    if (authToken === null) {
+      throw new Error("[Server Error] Could not create auth token.");
+    }
+
+    return [true, user, authToken];
   }
 
-  public async logout(authToken: AuthToken): Promise<void> {
-      // Pause so we can see the logging out message. Delete when the call to the server is implemented.
-      await new Promise((res) => setTimeout(res, 200));
+  public async logout(authToken: AuthToken): Promise<boolean> {
+    let newToken = AuthToken.fromJson(JSON.stringify(authToken));
+    if (!newToken?.token) {
+      throw new Error("[Bad Request] Missing auth token string");
+    }
+      return await this.authTokensDAO.deleteToken(newToken);
   }
 }

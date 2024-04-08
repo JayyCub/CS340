@@ -23,5 +23,40 @@ export class Follow {
 
     public set followee(value: User) {
         this._followee = value;
-    }    
+    }
+
+    public static fromJson(json: string | null | undefined): Follow | null {
+        if (!!json){
+            let jsonObject: {
+                _follower: {
+                    _firstName: string;
+                    _lastName: string;
+                    _alias: string;
+                    _imageUrl: string;
+                };
+                _followee: {
+                    _firstName: string;
+                    _lastName: string;
+                    _alias: string;
+                    _imageUrl: string;
+                };
+            } = JSON.parse(json);
+            return new Follow(
+              new User(
+                jsonObject._follower._firstName,
+                jsonObject._follower._lastName,
+                jsonObject._follower._alias,
+                jsonObject._follower._imageUrl
+              ),
+              new User(
+                jsonObject._followee._firstName,
+                jsonObject._followee._lastName,
+                jsonObject._followee._alias,
+                jsonObject._followee._imageUrl
+              ),
+            );
+        } else {
+            return null
+        }
+    }
 }

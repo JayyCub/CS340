@@ -1,6 +1,5 @@
 import { AuthToken, User } from "tweeter-shared";
 import {MessageView, Presenter} from "../Presenter";
-import {UserService} from "../../model/service/UserService";
 import {FollowService} from "../../model/service/FollowService";
 
 export interface UserInfoView extends MessageView {
@@ -63,7 +62,7 @@ export class UserInfoPresenter extends Presenter {
     }, "get followers count");
   }
 
-  public async followDisplayedUser(authToken: AuthToken, displayedUser: User) {
+  public async followDisplayedUser(authToken: AuthToken, displayedUser: User, currUser: User) {
     await this.doFailureReportingOperation(async () => {
       this.view.displayInfoMessage(
         `Adding ${displayedUser.name} to followers...`,
@@ -72,7 +71,8 @@ export class UserInfoPresenter extends Presenter {
 
       let [followersCount, followeesCount] = await this.service.follow(
         authToken!,
-        displayedUser!
+        displayedUser!,
+        currUser!
       );
 
       this.view.clearLastInfoMessage();
@@ -85,7 +85,8 @@ export class UserInfoPresenter extends Presenter {
 
   public async unfollowDisplayedUser(
     authToken: AuthToken,
-    displayedUser: User
+    displayedUser: User,
+    currUser: User
   ) {
     await this.doFailureReportingOperation(async () => {
       this.view.displayInfoMessage(
@@ -95,7 +96,8 @@ export class UserInfoPresenter extends Presenter {
 
       let [followersCount, followeesCount] = await this.service.unfollow(
         authToken!,
-        displayedUser!
+        displayedUser!,
+        currUser!
       );
 
       this.view.clearLastInfoMessage();

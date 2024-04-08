@@ -50,7 +50,7 @@ const UserInfo = (props: Props) => {
   ): Promise<void> => {
     event.preventDefault();
 
-    await presenter.followDisplayedUser(authToken!, displayedUser!)
+    await presenter.followDisplayedUser(authToken!, displayedUser!, currentUser!)
   };
 
   const unfollowDisplayedUser = async (
@@ -58,7 +58,7 @@ const UserInfo = (props: Props) => {
   ): Promise<void> => {
     event.preventDefault();
 
-    await presenter.unfollowDisplayedUser(authToken!, displayedUser!)
+    await presenter.unfollowDisplayedUser(authToken!, displayedUser!, currentUser!)
   };
 
   return (

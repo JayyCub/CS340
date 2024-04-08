@@ -48,8 +48,14 @@ export class AuthToken {
 
   public static fromJson(json: string | null | undefined): AuthToken | null {
     if (!!json) {
-      let jsonObject: { _token: string; _timestamp: number } = JSON.parse(json);
-      return new AuthToken(jsonObject._token, jsonObject._timestamp);
+      let jsonObject: {
+        _token: string;
+        _timestamp: number
+      } = JSON.parse(json);
+      return new AuthToken(
+        jsonObject._token,
+        jsonObject._timestamp
+      );
     } else {
       return null;
     }

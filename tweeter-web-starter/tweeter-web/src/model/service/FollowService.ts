@@ -6,7 +6,7 @@ import {
   GetIsFollowerStatusResponse,
   GetIsFollowerStatusRequest,
   GetFollowCountResponse,
-  FollowInfoRequest,
+  FollowInfoRequest, Follow,
 } from "tweeter-shared";
 import {ServerFacade} from "../../network/ServerFacade";
 import {TweeterResponse} from "tweeter-shared/dist/model/network/Response";
@@ -69,7 +69,7 @@ export class FollowService {
   ): Promise<number> {
     let response: GetFollowCountResponse =
       await this.serverFacade.getFolloweesCount(
-        new FollowInfoRequest(authToken, user)
+        new FollowInfoRequest(authToken, new Follow(user, user))
       );
     return response.count;
   }
@@ -80,17 +80,18 @@ export class FollowService {
   ): Promise<number> {
     let response: GetFollowCountResponse =
       await this.serverFacade.getFollowersCount(
-        new FollowInfoRequest(authToken, user)
+        new FollowInfoRequest(authToken, new Follow(user, user))
       );
     return response.count;
   }
 
   public async follow(
     authToken: AuthToken,
-    userToFollow: User
+    userToFollow: User,
+    currUser: User
   ): Promise<[followersCount: number, followeesCount: number]> {
     let response: TweeterResponse = await this.serverFacade.follow(
-      new FollowInfoRequest(authToken, userToFollow)
+      new FollowInfoRequest(authToken, new Follow(currUser, userToFollow))
     );
 
     let followersCount = await this.getFollowersCount(
@@ -107,10 +108,11 @@ export class FollowService {
 
   public async unfollow(
     authToken: AuthToken,
-    userToUnfollow: User
+    userToUnfollow: User,
+    currUser: User,
   ): Promise<[followersCount: number, followeesCount: number]> {
     let response: TweeterResponse = await this.serverFacade.unfollow(
-      new FollowInfoRequest(authToken, userToUnfollow)
+      new FollowInfoRequest(authToken, new Follow(currUser, userToUnfollow))
     );
 
     let followersCount = await this.getFollowersCount(

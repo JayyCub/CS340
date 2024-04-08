@@ -1,3 +1,7 @@
+import {UserService} from "../model/service/UserService";
+import {FollowService} from "../model/service/FollowService";
+import {StatusService} from "../model/service/StatusService";
+import {Dynamo_DAOFactory} from "../model/dao/Dynamo/Dynamo_DAOFactory";
 import {
   AuthenticateResponse,
   FollowInfoRequest,
@@ -10,14 +14,13 @@ import {
   LoadMoreStatusItemsResponse,
   LoadMoreUserItemsRequest,
   LoadMoreUserItemsResponse,
-  LoginRequest, LogoutRequest,
+  LoginRequest,
+  LogoutRequest,
   PostStatusRequest,
-  RegisterRequest, Status, TweeterResponse
+  RegisterRequest,
+  Status,
+  TweeterResponse
 } from "tweeter-shared";
-import {UserService} from "../model/service/UserService";
-import {FollowService} from "../model/service/FollowService";
-
-import {StatusService} from "../model/service/StatusService";
 
 export const _login = async (
   event: LoginRequest
@@ -32,7 +35,7 @@ export const _login = async (
 
   let response = new AuthenticateResponse(
     true,
-    ...(await new UserService().login(event.username, event.password))
+    ...(await new UserService(new Dynamo_DAOFactory()).login(event.username, event.password))
   );
 
   if (response.user == null) {
@@ -67,8 +70,7 @@ export const _register = async (
   }
 
   let response = new AuthenticateResponse(
-    true,
-    ...(await new UserService().register(
+    ...(await new UserService(new Dynamo_DAOFactory()).register(
       event.firstName,
       event.lastName,
       event.alias,
@@ -104,7 +106,7 @@ export const _getIsFollower = async (
 
   let response = new GetIsFollowerStatusResponse(
     true,
-    await new FollowService().getIsFollowerStatus(
+    await new FollowService(new Dynamo_DAOFactory()).getIsFollowerStatus(
       event.authToken,
       event.user,
       event.selectedUser
@@ -121,22 +123,23 @@ export const _getIsFollower = async (
 export const _getFolloweesCount = async (
   event: FollowInfoRequest
 ): Promise<GetFollowCountResponse> => {
-  if (event.user == null) {
-    throw new Error("[Bad Request] requested user is null");
+  if (event.follow == null) {
+    throw new Error("[Bad Request] requested follow object is null");
   }
-
   if (event.authToken == null) {
     throw new Error("[Bad Request] requested authToken is null");
   }
 
   let response = new GetFollowCountResponse(
     true,
-    await new FollowService().getFolloweesCount(event.authToken, event.user)
+    await new FollowService(new Dynamo_DAOFactory()).getFolloweesCount(event.authToken, event.follow)
   );
 
   if (response.count == null) {
     throw new Error("[Server Error] Internal Server Error: Check logs for more details.");
   }
+
+  console.log(response);
 
   return response;
 };
@@ -144,22 +147,23 @@ export const _getFolloweesCount = async (
 export const _getFollowersCount = async (
   event: FollowInfoRequest
 ): Promise<GetFollowCountResponse> => {
-  if (event.user == null) {
-    throw new Error("[Bad Request] requested user is null");
+  if (event.follow == null) {
+    throw new Error("[Bad Request] requested follow object is null");
   }
-
   if (event.authToken == null) {
     throw new Error("[Bad Request] requested authToken is null");
   }
 
   let response = new GetFollowCountResponse(
     true,
-    await new FollowService().getFollowersCount(event.authToken, event.user)
+    await new FollowService(new Dynamo_DAOFactory()).getFollowersCount(event.authToken, event.follow)
   );
 
   if (response.count == null) {
     throw new Error("[Server Error] Internal Server Error: Check logs for more details.");
   }
+
+  console.log(response);
 
   return response;
 };
@@ -167,29 +171,31 @@ export const _getFollowersCount = async (
 export const _follow = async (
   event: FollowInfoRequest
 ): Promise<TweeterResponse> => {
-  if (event.user == null) {
-    throw new Error("[Bad Request] requested user is null");
+  if (event.follow == null) {
+    throw new Error("[Bad Request] requested follow object is null");
   }
-
   if (event.authToken == null) {
     throw new Error("[Bad Request] requested authToken is null");
   }
 
-  return new TweeterResponse(true);
+  return new TweeterResponse(
+    ...(await new FollowService(new Dynamo_DAOFactory()).follow(event.authToken, event.follow))
+  );
 };
 
 export const _unfollow = async (
   event: FollowInfoRequest
 ): Promise<TweeterResponse> => {
-  if (event.user == null) {
-    throw new Error("[Bad Request] requested user is null");
+  if (event.follow == null) {
+    throw new Error("[Bad Request] requested follow object is null");
   }
-
   if (event.authToken == null) {
     throw new Error("[Bad Request] requested authToken is null");
   }
 
-  return new TweeterResponse(true);
+  return new TweeterResponse(
+    ...(await new FollowService(new Dynamo_DAOFactory()).unfollow(event.authToken, event.follow))
+  );
 };
 
 export const _getUser = async (
@@ -205,7 +211,7 @@ export const _getUser = async (
 
   let response = new GetUserResponse(
     true,
-    await new UserService().getUser(event.authToken, event.alias)
+    await new UserService(new Dynamo_DAOFactory()).getUser(event.authToken, event.alias)
   );
 
   if (response.user == null) {
@@ -222,7 +228,9 @@ export const _logout = async (
     throw new Error("[Bad Request] requested token is null");
   }
 
-  return new TweeterResponse(true);
+  let success = await new UserService(new Dynamo_DAOFactory()).logout(event.token);
+
+  return new TweeterResponse(success);
 };
 
 export const _loadMoreFollowers = async (
@@ -242,7 +250,7 @@ export const _loadMoreFollowers = async (
 
   let response = new LoadMoreUserItemsResponse(
     true,
-    ...(await new FollowService().loadMoreFollowers(
+    ...(await new FollowService(new Dynamo_DAOFactory()).loadMoreFollowers(
       event.authToken,
       event.user,
       event.pageSize,
@@ -276,7 +284,7 @@ export const _loadMoreFollowees = async (
 
   let response = new LoadMoreUserItemsResponse(
     true,
-    ...(await new FollowService().loadMoreFollowees(
+    ...(await new FollowService(new Dynamo_DAOFactory()).loadMoreFollowees(
       event.authToken,
       event.user,
       event.pageSize,
@@ -319,7 +327,7 @@ export const _loadMoreFeedItems = async (
 
   let response = new LoadMoreStatusItemsResponse(
     true,
-    ...(await new StatusService().loadMoreFeedItems(
+    ...(await new StatusService(new Dynamo_DAOFactory()).loadMoreFeedItems(
       event.authToken,
       event.user,
       event.pageSize,
@@ -362,7 +370,7 @@ export const _loadMoreStoryItems = async (
 
   let response = new LoadMoreStatusItemsResponse(
     true,
-    ...(await new StatusService().loadMoreStoryItems(
+    ...(await new StatusService(new Dynamo_DAOFactory()).loadMoreStoryItems(
       event.authToken,
       event.user,
       event.pageSize,
@@ -390,5 +398,9 @@ export const _postStatus = async (
   if (event.authToken == null) {
     throw new Error("[Bad Request] requested authToken is null");
   }
-  return new TweeterResponse(true);
+
+  return new TweeterResponse(
+    await new StatusService(new Dynamo_DAOFactory()).postStatus(event.authToken, event.newStatus),
+    "Successfully posted status"
+  );
 };

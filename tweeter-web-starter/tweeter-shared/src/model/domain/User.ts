@@ -3,17 +3,20 @@ export class User {
   private _lastName: string;
   private _alias: string;
   private _imageUrl: string;
+  private _password: string | undefined;
 
   public constructor(
     firstName: string,
     lastName: string,
     alias: string,
-    imageUrl: string
+    imageUrl: string,
+    password?: string
   ) {
     this._firstName = firstName;
     this._lastName = lastName;
     this._alias = alias;
     this._imageUrl = imageUrl;
+    this._password = password;
   }
 
   public get firstName(): string {
@@ -50,6 +53,10 @@ export class User {
 
   public set imageUrl(value: string) {
     this._imageUrl = value;
+  }
+
+  public get password() {
+    return this._password;
   }
 
   public equals(other: User): boolean {
