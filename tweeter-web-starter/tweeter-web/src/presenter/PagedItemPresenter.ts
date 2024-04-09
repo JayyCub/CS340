@@ -52,7 +52,7 @@ export abstract class PagedItemPresenter<T, U> extends Presenter {
         this.lastItem = newItems[newItems.length - 1];
         this.view.addItems(newItems);
       }
-    }, this.getItemDescription())
+    }, this.getItemDescription(), "Error: could not load more items.")
   };
 
   protected abstract getMoreItems(authToken: AuthToken, user: User): Promise<[T[], boolean]>;

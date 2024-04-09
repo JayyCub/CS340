@@ -29,6 +29,6 @@ export class AppNavbarPresenter extends Presenter {
       this.view.clearLastInfoMessage();
       this.view.clearUserInfo();
       this.view.navigateToLogin();
-    }, "log user out");
+    }, "log user out", "There was an error trying to log out. Please try again.");
   }
 }

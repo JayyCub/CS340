@@ -37,7 +37,7 @@ export class UserInfoPresenter extends Presenter {
           )
         );
       }
-    }, "determine follower status");
+    }, "determine follower status", "Error: could not get following status.");
   }
 
   public async setNumbFollowees(
@@ -48,7 +48,7 @@ export class UserInfoPresenter extends Presenter {
       this.view.setFolloweesCount(
         await this.service.getFolloweesCount(authToken, displayedUser)
       );
-    }, "get followees count");
+    }, "get followees count", "Error: could not get followees count.");
   }
 
   public async setNumbFollowers(
@@ -59,7 +59,7 @@ export class UserInfoPresenter extends Presenter {
       this.view.setFollowersCount(
         await this.service.getFollowersCount(authToken, displayedUser)
       );
-    }, "get followers count");
+    }, "get followers count", "Error: could not get followers count.");
   }
 
   public async followDisplayedUser(authToken: AuthToken, displayedUser: User, currUser: User) {
@@ -80,7 +80,7 @@ export class UserInfoPresenter extends Presenter {
       this.view.setIsFollower(true);
       this.view.setFollowersCount(followersCount);
       this.view.setFolloweesCount(followeesCount);
-    }, "follow user");
+    }, "follow user", "Error: could not follow user.");
   }
 
   public async unfollowDisplayedUser(
@@ -105,6 +105,6 @@ export class UserInfoPresenter extends Presenter {
       this.view.setIsFollower(false);
       this.view.setFollowersCount(followersCount);
       this.view.setFolloweesCount(followeesCount);
-    }, "unfollow user");
+    }, "unfollow user", "Error: could not unfollow user.");
   }
 }

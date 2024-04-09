@@ -19,13 +19,18 @@ export class Presenter {
     return this._view;
   }
 
-  protected async doFailureReportingOperation(operation: () => Promise<void>, operationDescription: string): Promise<void> {
+  protected async doFailureReportingOperation(
+    operation: () => Promise<void>,
+    operationDescription: string,
+    failureDisplayMessage: string
+  ): Promise<void> {
     try {
       await operation();
     } catch (error) {
-      this.view.displayErrorMessage(
+      console.error(
         `Failed to ${operationDescription} because of exception: ${(error as Error).message}`
       );
+      this.view.displayErrorMessage(failureDisplayMessage);
     }
   };
 

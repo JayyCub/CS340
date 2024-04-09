@@ -43,7 +43,7 @@ export class RegisterPresenter extends AuthenticationPresenter<UserService> {
         rememberMeRefVal,
         "/"
       );
-    }, "register user");
+    }, "register user", "There was a problem creating a new user account, please verify your information and try again.");
   }
 
   public handleImageFile(file: File | undefined) {

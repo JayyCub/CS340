@@ -37,6 +37,6 @@ export class PostStatusPresenter extends Presenter {
       this.view.clearLastInfoMessage();
       this.view.setPost("");
       this.view.displayInfoMessage("Status posted!", 2000);
-    }, "post the status");
+    }, "post the status", "Error: could not post status");
   }
 }
