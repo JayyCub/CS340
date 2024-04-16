@@ -8,5 +8,7 @@ export abstract class FeedsDAO {
     lastItem: number | undefined
   ): Promise<DataPage<Status>>;
 
+  abstract batchUpload(items: any): Promise<void>;
+
   abstract addToUsersFeeds(newStatus: Status): Promise<void>;
 }

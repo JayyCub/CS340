@@ -66,7 +66,7 @@ export class UserInfoPresenter extends Presenter {
     await this.doFailureReportingOperation(async () => {
       this.view.displayInfoMessage(
         `Adding ${displayedUser.name} to followers...`,
-        0
+        1
       );
 
       let [followersCount, followeesCount] = await this.service.follow(
@@ -91,7 +91,7 @@ export class UserInfoPresenter extends Presenter {
     await this.doFailureReportingOperation(async () => {
       this.view.displayInfoMessage(
         `Removing ${displayedUser!.name} from followers...`,
-        0
+        1
       );
 
       let [followersCount, followeesCount] = await this.service.unfollow(

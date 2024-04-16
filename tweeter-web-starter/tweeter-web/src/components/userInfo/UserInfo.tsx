@@ -35,6 +35,7 @@ const UserInfo = (props: Props) => {
   }
 
   useEffect(() => {
+    console.log("render");
     presenter.setIsFollowerStatus(authToken!, currentUser!, displayedUser!);
     presenter.setNumbFollowees(authToken!, displayedUser!);
     presenter.setNumbFollowers(authToken!, displayedUser!);

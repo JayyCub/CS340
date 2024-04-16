@@ -24,6 +24,9 @@ export class ServerFacade {
 
   private clientCommunicator = new ClientCommunicator(this.SERVER_URL);
 
+  private requestCache = new Map<string, any>(); // Cache to see if a request was previously done <requestURL, request>
+  private responseCache = new Map<string, any>(); // Cache for previous response. <requestURL, response>
+
   // USER SERVICE ------------------------------------------------
   async getUser(request: GetUserRequest): Promise<GetUserResponse> {
     const endpoint = "/service/getUser";
@@ -101,16 +104,28 @@ export class ServerFacade {
     request: FollowInfoRequest
   ): Promise<GetFollowCountResponse> {
     const endpoint = "/service/getFolloweesCount";
-    const response: JSON = await this.clientCommunicator.doPost<FollowInfoRequest>(request, endpoint);
-    return GetFollowCountResponse.fromJson(response);
+    if (this.requestCache.has(endpoint) && JSON.stringify(this.requestCache.get(endpoint)) === JSON.stringify(request)) {
+      return this.responseCache.get(endpoint)
+    } else {
+      const response: JSON = await this.clientCommunicator.doPost<FollowInfoRequest>(request, endpoint);
+      this.requestCache.set(endpoint, request);
+      this.responseCache.set(endpoint, GetFollowCountResponse.fromJson(response))
+      return GetFollowCountResponse.fromJson(response);
+    }
   }
 
   async getFollowersCount(
     request: FollowInfoRequest
   ): Promise<GetFollowCountResponse> {
     const endpoint = "/service/getFollowersCount";
-    const response: JSON = await this.clientCommunicator.doPost<FollowInfoRequest>(request, endpoint);
-    return GetFollowCountResponse.fromJson(response);
+    if (this.requestCache.has(endpoint) && JSON.stringify(this.requestCache.get(endpoint)) === JSON.stringify(request)) {
+      return this.responseCache.get(endpoint)
+    } else {
+      const response: JSON = await this.clientCommunicator.doPost<FollowInfoRequest>(request, endpoint);
+      this.requestCache.set(endpoint, request);
+      this.responseCache.set(endpoint, GetFollowCountResponse.fromJson(response))
+      return GetFollowCountResponse.fromJson(response);
+    }
   }
 
   async follow(request: FollowInfoRequest): Promise<TweeterResponse> {

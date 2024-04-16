@@ -23,7 +23,7 @@ const UserItemScroller = (props: Props) => {
 
   // Load initial items
   useEffect(() => {
-    loadMoreItems();
+    loadMoreItems().then();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -53,7 +53,7 @@ export class Dynamo_FollowsDAO implements FollowsDAO {
       Key: this.generateFollowItem(follow),
     };
     try {
-      let response = await this.client.send(new DeleteCommand(params));
+      await this.client.send(new DeleteCommand(params));
     } catch (e) {
       throw new Error("[Server Error] : " + e)
     }
@@ -95,22 +95,34 @@ export class Dynamo_FollowsDAO implements FollowsDAO {
   }
 
   async getNumFollowers(alias: string): Promise<number> {
-    const params: QueryCommandInput = {
-      TableName: this.tableName,
-      Select: "COUNT",
-      IndexName: this.followee_handle_index,
-      KeyConditionExpression: `${this.followee_handle} = :fol`,
-      ExpressionAttributeValues: {
-        ":fol": alias,
-      },
-    };
+    let localCount = 0
+    let hasMoreToCount = true;
+    let lastKey:  Record<string, any> | undefined = undefined;
 
-    try {
-      const data = await this.client.send(new QueryCommand(params));
-      return data.Count ?? 0;
-    } catch (e) {
-      throw new Error("[Server Error] : " + e)
+    while (hasMoreToCount) {
+      const params: QueryCommandInput = {
+        TableName: this.tableName,
+        Select: "COUNT",
+        IndexName: this.followee_handle_index,
+        KeyConditionExpression: `${this.followee_handle} = :fol`,
+        ExpressionAttributeValues: {
+          ":fol": alias,
+        },
+        ExclusiveStartKey: lastKey
+      };
+
+      try {
+        const data = await this.client.send(new QueryCommand(params));
+        console.log(data);
+        localCount += data.Count ?? 0;
+        hasMoreToCount = data.LastEvaluatedKey !== undefined;
+        lastKey = data.LastEvaluatedKey;
+      } catch (e) {
+        throw new Error("[Server Error] : " + e)
+      }
     }
+
+    return localCount
   }
 
   async getNumFollowees(alias: string): Promise<number> {

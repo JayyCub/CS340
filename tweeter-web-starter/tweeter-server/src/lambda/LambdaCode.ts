@@ -404,3 +404,19 @@ export const _postStatus = async (
     "Successfully posted status"
   );
 };
+
+export const _processStatusQueue = async (
+  event: any
+): Promise<void> => {
+  for (let i = 0; i < event.Records.length; ++i) {
+    const { body } = event.Records[i];
+    await new StatusService(new Dynamo_DAOFactory()).addToFeeds(JSON.parse(body));
+  }
+};
+
+export const _processUpdateFeedQueue = async (event: any): Promise<void> => {
+  for (let i = 0; i < event.Records.length; ++i) {
+    const { body } = event.Records[i];
+    await new StatusService(new Dynamo_DAOFactory()).batchUploadToFeeds(JSON.parse(body))
+  }
+}

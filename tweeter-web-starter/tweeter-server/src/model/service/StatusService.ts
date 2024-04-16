@@ -1,8 +1,10 @@
-import { AuthToken, User, Status } from "tweeter-shared";
+import {AuthToken, Status, User} from "tweeter-shared";
 import {AuthTokensDAO} from "../dao/interfaces/AuthTokensDAO";
 import {DAOFactory} from "../dao/interfaces/DAOFactory";
 import {StatusesDAO} from "../dao/interfaces/StatusesDAO";
 import {FeedsDAO} from "../dao/interfaces/FeedsDAO";
+import {SendMessageCommand, SQSClient} from "@aws-sdk/client-sqs";
+
 
 export class StatusService {
   private authTokensDAO: AuthTokensDAO;
@@ -97,7 +99,7 @@ export class StatusService {
 
     let newStatus = Status.fromJson(JSON.stringify(status));
     if (!newStatus) {
-      throw new Error("[Bad Request] Status is missing data. Cannot post.")
+      throw new Error("[Bad Request] Status is missing data. Cannot post.");
     }
 
     let success: boolean = await this.statusesDAO.postStatus(newStatus);
@@ -105,8 +107,34 @@ export class StatusService {
       throw new Error("[Server Error] There was an error adding post to DB");
     }
 
-    await this.feedsDAO.addToUsersFeeds(newStatus);
+    // Add to SQS queue of Statuses (Queue.A : PostStatus)
+    let sqsClient = new SQSClient();
+    try {
+      await sqsClient.send(new SendMessageCommand({
+        DelaySeconds: 1,
+        MessageBody: JSON.stringify(status),
+        QueueUrl: "https://sqs.us-east-1.amazonaws.com/612237749982/PostStatus",
+      }));
+    } catch (e) {
+      console.error("[Server Error] Error adding post to Statuses Queue: " + e);
+    }
 
     return success
+  }
+
+  public async addToFeeds(
+    status: Status
+  ): Promise<void> {
+    let newStatus = Status.fromJson(JSON.stringify(status));
+    if (!newStatus) {
+      throw new Error("[Bad Request] Status is missing data. Cannot add to batch queue.")
+    }
+    await this.feedsDAO.addToUsersFeeds(newStatus);
+  }
+
+  public async batchUploadToFeeds(
+    command: any
+  ): Promise<void> {
+    await this.feedsDAO.batchUpload(command);
   }
 }

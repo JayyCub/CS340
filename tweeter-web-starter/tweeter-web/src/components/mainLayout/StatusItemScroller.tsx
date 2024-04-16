@@ -23,7 +23,7 @@ const StatusItemScroller = (props: Props) => {
 
   // Load initial items
   useEffect(() => {
-    loadMore();
+    loadMore().then();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

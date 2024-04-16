@@ -1,9 +1,10 @@
 import {FeedsDAO} from "../interfaces/FeedsDAO";
 import {Status, User} from "tweeter-shared";
 import {DataPage} from "./DataPage";
-import {DynamoDBDocumentClient, PutCommand, QueryCommand} from "@aws-sdk/lib-dynamodb";
+import {BatchWriteCommand, DynamoDBDocumentClient, QueryCommand} from "@aws-sdk/lib-dynamodb";
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb";
 import {Dynamo_FollowsDAO} from "./Dynamo_FollowsDAO";
+import {SendMessageCommand, SQSClient} from "@aws-sdk/client-sqs";
 
 export class Dynamo_FeedsDAO extends FeedsDAO {
   readonly tableName = "Feeds";
@@ -15,31 +16,78 @@ export class Dynamo_FeedsDAO extends FeedsDAO {
 
   async addToUsersFeeds(newStatus: Status): Promise<void> {
     let loop = true;
-    let lastFollowHandle = undefined;
+    let lastFollow: User | undefined = undefined;
+    let sqsClient = new SQSClient();
+
+
     while (loop) {
       let response:  DataPage<User> = await new Dynamo_FollowsDAO().getPageOfFollowers(
-        newStatus.user.alias, 50, lastFollowHandle);
+        newStatus.user.alias, 200, lastFollow !== undefined ? lastFollow.alias : undefined);
 
-      let user;
-      for (user of response.values) {
-        let params = {
-          TableName: this.tableName,
-          Item: {
-            [this.follower_alias]: user.alias,
-            [this.time_stamp]: newStatus.timestamp,
-            [this.post_content]: JSON.stringify(newStatus)
+      let items: any[] = [];
+
+      for (const user of response.values) {
+        items.push({
+          PutRequest: {
+            Item: {
+              [this.follower_alias]: user.alias,
+              [this.time_stamp]: newStatus.timestamp,
+              [this.post_content]: JSON.stringify(newStatus)
+            }
           }
-        };
-        try {
-          await this.client.send(new PutCommand(params));
-        } catch (e) {
-          throw new Error(
-            "[Server Error] Error adding post to feed for user: " + user.alias + ": " + e);
+        });
+
+        // items is at batch size and needs to be sent to queue
+        if (items.length === 25) {
+          // Send batch request to Update Feed Queue
+          try {
+            await sqsClient.send(new SendMessageCommand({
+              DelaySeconds: 1,
+              MessageBody: JSON.stringify({
+                RequestItems: {
+                  [this.tableName]: items
+                }
+              }),
+              QueueUrl: "https://sqs.us-east-1.amazonaws.com/612237749982/UpdateFeed",
+            }));
+            console.log("Sent full batch!");
+          } catch (e) {
+            throw new Error("[Server Error] Error adding post to Statuses Queue: " + e);
+          }
+          items = [];
         }
-        lastFollowHandle = user.alias;
       }
 
-      loop = response.hasMorePages
+
+      if (items.length > 0) {
+        // Send batch request to Update Feed Queue
+        try {
+          await sqsClient.send(new SendMessageCommand({
+            DelaySeconds: 1,
+            MessageBody: JSON.stringify({
+              RequestItems: {
+                [this.tableName]: items
+              }
+            }),
+            QueueUrl: "https://sqs.us-east-1.amazonaws.com/612237749982/UpdateFeed",
+          }));
+          console.log("Sent partial batch!");
+        } catch (e) {
+          throw new Error("[Server Error] Error adding post to Statuses Queue: " + e);
+        }
+        items = [];
+      }
+
+      loop = response.hasMorePages;
+      lastFollow = response.values.pop();
+    }
+  }
+
+  async batchUpload(command: any): Promise<void> {
+    try {
+      await this.client.send(new BatchWriteCommand(command));
+    } catch (e) {
+      throw new Error("There was an error completing the batch write: " + e);
     }
   }
 
