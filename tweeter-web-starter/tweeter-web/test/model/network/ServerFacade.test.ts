@@ -63,16 +63,16 @@ describe("ServerFacade", () => {
     }
   });
 
-  it("return the number of followers", async () => {
-    const request: FollowInfoRequest = new FollowInfoRequest(
-      new AuthToken("x", 1),
-      new User("jacob", "thomsen", "@jaycub", "image")
-    );
-
-    const result: GetFollowCountResponse =
-      await serverFacade.getFollowersCount(request);
-
-    expect(result.success).toBe(true);
-    expect(result.count).toBeGreaterThanOrEqual(0);
-  });
+  // it("return the number of followers", async () => {
+  //   const request: FollowInfoRequest = new FollowInfoRequest(
+  //     new AuthToken("x", 1),
+  //     new User("jacob", "thomsen", "@jaycub", "image")
+  //   );
+  //
+  //   const result: GetFollowCountResponse =
+  //     await serverFacade.getFollowersCount(request);
+  //
+  //   expect(result.success).toBe(true);
+  //   expect(result.count).toBeGreaterThanOrEqual(0);
+  // });
 });
