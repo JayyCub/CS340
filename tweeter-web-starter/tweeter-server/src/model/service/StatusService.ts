@@ -122,6 +122,8 @@ export class StatusService {
     return success
   }
 
+
+  // Functions for lambdas triggered by SQS
   public async addToFeeds(
     status: Status
   ): Promise<void> {

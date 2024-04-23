@@ -405,6 +405,9 @@ export const _postStatus = async (
   );
 };
 
+// Lambdas triggered by SQS
+
+// First queue handler, creates batches of Feed items, sends batch to second queue
 export const _processStatusQueue = async (
   event: any
 ): Promise<void> => {
@@ -414,6 +417,7 @@ export const _processStatusQueue = async (
   }
 };
 
+// Second queue handler, performs DDB batch updates
 export const _processUpdateFeedQueue = async (event: any): Promise<void> => {
   for (let i = 0; i < event.Records.length; ++i) {
     const { body } = event.Records[i];

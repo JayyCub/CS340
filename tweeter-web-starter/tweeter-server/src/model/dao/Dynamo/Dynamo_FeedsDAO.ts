@@ -42,7 +42,7 @@ export class Dynamo_FeedsDAO extends FeedsDAO {
           // Send batch request to Update Feed Queue
           try {
             await sqsClient.send(new SendMessageCommand({
-              DelaySeconds: 1,
+              DelaySeconds: 0,
               MessageBody: JSON.stringify({
                 RequestItems: {
                   [this.tableName]: items
@@ -63,7 +63,7 @@ export class Dynamo_FeedsDAO extends FeedsDAO {
         // Send batch request to Update Feed Queue
         try {
           await sqsClient.send(new SendMessageCommand({
-            DelaySeconds: 1,
+            DelaySeconds: 0,
             MessageBody: JSON.stringify({
               RequestItems: {
                 [this.tableName]: items
